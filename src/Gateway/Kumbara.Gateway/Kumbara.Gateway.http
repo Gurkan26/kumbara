@@ -1,6 +1,30 @@
-@Kumbara.Gateway_HostAddress = http://localhost:5038
+@Kumbara.Gateway_HostAddress = http://localhost:5000
 
-GET {{Kumbara.Gateway_HostAddress}}/weatherforecast/
+### Health Check
+GET {{Kumbara.Gateway_HostAddress}}/health
 Accept: application/json
 
-###
+### Identity Service via Gateway
+POST {{Kumbara.Gateway_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@kumbara.local",
+  "password": "Password123!"
+}
+
+### Wallets via Gateway
+GET {{Kumbara.Gateway_HostAddress}}/api/wallets
+Accept: application/json
+
+### Ledger via Gateway
+GET {{Kumbara.Gateway_HostAddress}}/api/ledger/accounts
+Accept: application/json
+
+### Transfers via Gateway
+GET {{Kumbara.Gateway_HostAddress}}/api/transfers
+Accept: application/json
+
+### Risk via Gateway
+GET {{Kumbara.Gateway_HostAddress}}/api/risk/health
+Accept: application/json
