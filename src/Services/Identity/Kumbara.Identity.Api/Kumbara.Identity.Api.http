@@ -1,6 +1,32 @@
-@Kumbara.Identity.Api_HostAddress = http://localhost:5285
+@Kumbara.Identity.Api_HostAddress = http://localhost:5001
 
-GET {{Kumbara.Identity.Api_HostAddress}}/weatherforecast/
+### Health Check
+GET {{Kumbara.Identity.Api_HostAddress}}/health
 Accept: application/json
 
-###
+### Register
+POST {{Kumbara.Identity.Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "Password123!",
+  "fullName": "Test User"
+}
+
+### Login
+POST {{Kumbara.Identity.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "Password123!"
+}
+
+### Refresh Token
+POST {{Kumbara.Identity.Api_HostAddress}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "YOUR_REFRESH_TOKEN_HERE"
+}
