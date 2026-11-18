@@ -1,0 +1,6 @@
+@Kumbara.Gateway_HostAddress = http://localhost:5038
+
+GET {{Kumbara.Gateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

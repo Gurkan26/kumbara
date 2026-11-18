@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kumbara.Identity.Domain\Kumbara.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Kumbara.BuildingBlocks.Contracts\Kumbara.BuildingBlocks.Contracts.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

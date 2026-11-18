@@ -1,0 +1,6 @@
+@Kumbara.Risk.Api_HostAddress = http://localhost:5241
+
+GET {{Kumbara.Risk.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
