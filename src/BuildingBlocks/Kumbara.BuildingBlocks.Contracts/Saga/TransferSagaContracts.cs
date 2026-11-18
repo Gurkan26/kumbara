@@ -1,5 +1,6 @@
 namespace Kumbara.BuildingBlocks.Contracts.Saga;
 
+using System.Text.Json.Serialization;
 using Kumbara.BuildingBlocks.Contracts.IntegrationEvents;
 
 // ============================================================================
@@ -30,6 +31,7 @@ public record ReleaseLedgerHoldCommand(
 // Transfer Saga Events
 // ============================================================================
 
+[method: JsonConstructor]
 public record TransferStartedEvent(
     Guid TransferId,
     Guid SourceAccountId,
@@ -43,6 +45,7 @@ public record TransferStartedEvent(
         : this(transferId, sourceAccountId, destinationAccountId, amount, currency, DateTime.UtcNow) { }
 }
 
+[method: JsonConstructor]
 public record RiskApprovedEvent(
     Guid TransferId,
     DateTime OccurredAt) : IIntegrationEvent
@@ -52,6 +55,7 @@ public record RiskApprovedEvent(
         : this(transferId, DateTime.UtcNow) { }
 }
 
+[method: JsonConstructor]
 public record RiskRejectedEvent(
     Guid TransferId,
     string Reason,
@@ -62,6 +66,7 @@ public record RiskRejectedEvent(
         : this(transferId, reason, DateTime.UtcNow) { }
 }
 
+[method: JsonConstructor]
 public record FundsHeldEvent(
     Guid TransferId,
     Guid AccountId,
@@ -73,6 +78,7 @@ public record FundsHeldEvent(
         : this(transferId, accountId, amount, DateTime.UtcNow) { }
 }
 
+[method: JsonConstructor]
 public record FundsHoldFailedEvent(
     Guid TransferId,
     string Reason,
@@ -83,6 +89,7 @@ public record FundsHoldFailedEvent(
         : this(transferId, reason, DateTime.UtcNow) { }
 }
 
+[method: JsonConstructor]
 public record HoldCommittedEvent(
     Guid TransferId,
     DateTime OccurredAt) : IIntegrationEvent
@@ -92,6 +99,7 @@ public record HoldCommittedEvent(
         : this(transferId, DateTime.UtcNow) { }
 }
 
+[method: JsonConstructor]
 public record HoldCommitFailedEvent(
     Guid TransferId,
     string Reason,
@@ -102,6 +110,7 @@ public record HoldCommitFailedEvent(
         : this(transferId, reason, DateTime.UtcNow) { }
 }
 
+[method: JsonConstructor]
 public record HoldReleasedEvent(
     Guid TransferId,
     DateTime OccurredAt) : IIntegrationEvent
@@ -111,6 +120,7 @@ public record HoldReleasedEvent(
         : this(transferId, DateTime.UtcNow) { }
 }
 
+[method: JsonConstructor]
 public record TransferCompletedEvent(
     Guid TransferId,
     DateTime OccurredAt) : IIntegrationEvent
@@ -120,6 +130,7 @@ public record TransferCompletedEvent(
         : this(transferId, DateTime.UtcNow) { }
 }
 
+[method: JsonConstructor]
 public record TransferFailedEvent(
     Guid TransferId,
     string Reason,

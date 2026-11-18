@@ -6,34 +6,36 @@ namespace Kumbara.Transfer.Application.Sagas;
 
 public class TransferStateMachine : MassTransitStateMachine<TransferState>
 {
-    public State AwaitingRisk { get; private set; } = null!;
-    public State AwaitingHold { get; private set; } = null!;
-    public State AwaitingCommit { get; private set; } = null!;
-    public State AwaitingCompensation { get; private set; } = null!;
-    public State Completed { get; private set; } = null!;
-    public State Failed { get; private set; } = null!;
+#pragma warning disable CS8618
+    public State AwaitingRisk { get; private set; }
+    public State AwaitingHold { get; private set; }
+    public State AwaitingCommit { get; private set; }
+    public State AwaitingCompensation { get; private set; }
+    public State Completed { get; private set; }
+    public State Failed { get; private set; }
 
-    public Event<TransferStartedEvent> TransferStarted { get; private set; } = null!;
-    public Event<RiskApprovedEvent> RiskApproved { get; private set; } = null!;
-    public Event<RiskRejectedEvent> RiskRejected { get; private set; } = null!;
-    public Event<FundsHeldEvent> FundsHeld { get; private set; } = null!;
-    public Event<FundsHoldFailedEvent> FundsHoldFailed { get; private set; } = null!;
-    public Event<HoldCommittedEvent> HoldCommitted { get; private set; } = null!;
-    public Event<HoldCommitFailedEvent> HoldCommitFailed { get; private set; } = null!;
-    public Event<HoldReleasedEvent> HoldReleased { get; private set; } = null!;
+    public Event<TransferStartedEvent> TransferStarted { get; private set; }
+    public Event<RiskApprovedEvent> RiskApproved { get; private set; }
+    public Event<RiskRejectedEvent> RiskRejected { get; private set; }
+    public Event<FundsHeldEvent> FundsHeld { get; private set; }
+    public Event<FundsHoldFailedEvent> FundsHoldFailed { get; private set; }
+    public Event<HoldCommittedEvent> HoldCommitted { get; private set; }
+    public Event<HoldCommitFailedEvent> HoldCommitFailed { get; private set; }
+    public Event<HoldReleasedEvent> HoldReleased { get; private set; }
+
 
     public TransferStateMachine()
     {
         InstanceState(x => x.CurrentState);
 
-        Event(() => TransferStarted, x => x.CorrelateById(m => m.Message.TransferId));
-        Event(() => RiskApproved, x => x.CorrelateById(m => m.Message.TransferId));
-        Event(() => RiskRejected, x => x.CorrelateById(m => m.Message.TransferId));
-        Event(() => FundsHeld, x => x.CorrelateById(m => m.Message.TransferId));
-        Event(() => FundsHoldFailed, x => x.CorrelateById(m => m.Message.TransferId));
-        Event(() => HoldCommitted, x => x.CorrelateById(m => m.Message.TransferId));
-        Event(() => HoldCommitFailed, x => x.CorrelateById(m => m.Message.TransferId));
-        Event(() => HoldReleased, x => x.CorrelateById(m => m.Message.TransferId));
+        Event(() => TransferStarted, x => x.CorrelateById(context => context.Message.TransferId));
+        Event(() => RiskApproved, x => x.CorrelateById(context => context.Message.TransferId));
+        Event(() => RiskRejected, x => x.CorrelateById(context => context.Message.TransferId));
+        Event(() => FundsHeld, x => x.CorrelateById(context => context.Message.TransferId));
+        Event(() => FundsHoldFailed, x => x.CorrelateById(context => context.Message.TransferId));
+        Event(() => HoldCommitted, x => x.CorrelateById(context => context.Message.TransferId));
+        Event(() => HoldCommitFailed, x => x.CorrelateById(context => context.Message.TransferId));
+        Event(() => HoldReleased, x => x.CorrelateById(context => context.Message.TransferId));
 
         // 1. Transfer Initiated
         Initially(
@@ -128,3 +130,4 @@ public class TransferStateMachine : MassTransitStateMachine<TransferState>
         );
     }
 }
+
