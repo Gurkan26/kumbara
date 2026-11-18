@@ -12,7 +12,8 @@ public class ArchitectureTests
         "Kumbara.Wallet.Domain",
         "Kumbara.Ledger.Domain",
         "Kumbara.Transfer.Domain",
-        "Kumbara.Risk.Domain"
+        "Kumbara.Risk.Domain",
+        "Kumbara.Notification.Domain"
     };
 
     private static readonly string[] ApplicationProjects = new[]
@@ -21,7 +22,8 @@ public class ArchitectureTests
         "Kumbara.Wallet.Application",
         "Kumbara.Ledger.Application",
         "Kumbara.Transfer.Application",
-        "Kumbara.Risk.Application"
+        "Kumbara.Risk.Application",
+        "Kumbara.Notification.Application"
     };
 
     private static readonly string[] InfrastructureProjects = new[]
@@ -30,7 +32,8 @@ public class ArchitectureTests
         "Kumbara.Wallet.Infrastructure",
         "Kumbara.Ledger.Infrastructure",
         "Kumbara.Transfer.Infrastructure",
-        "Kumbara.Risk.Infrastructure"
+        "Kumbara.Risk.Infrastructure",
+        "Kumbara.Notification.Infrastructure"
     };
 
     private static readonly string[] ApiProjects = new[]
@@ -40,6 +43,7 @@ public class ArchitectureTests
         "Kumbara.Ledger.Api",
         "Kumbara.Transfer.Api",
         "Kumbara.Risk.Api",
+        "Kumbara.Notification.Api",
         "Kumbara.Gateway"
     };
 
@@ -49,7 +53,8 @@ public class ArchitectureTests
         Assembly.Load("Kumbara.Wallet.Domain"),
         Assembly.Load("Kumbara.Ledger.Domain"),
         Assembly.Load("Kumbara.Transfer.Domain"),
-        Assembly.Load("Kumbara.Risk.Domain")
+        Assembly.Load("Kumbara.Risk.Domain"),
+        Assembly.Load("Kumbara.Notification.Domain")
     };
 
     private static Assembly[] GetApplicationAssemblies() => new[]
@@ -58,7 +63,8 @@ public class ArchitectureTests
         Assembly.Load("Kumbara.Wallet.Application"),
         Assembly.Load("Kumbara.Ledger.Application"),
         Assembly.Load("Kumbara.Transfer.Application"),
-        Assembly.Load("Kumbara.Risk.Application")
+        Assembly.Load("Kumbara.Risk.Application"),
+        Assembly.Load("Kumbara.Notification.Application")
     };
 
     private static Assembly[] GetApiAssemblies() => new[]
@@ -67,7 +73,8 @@ public class ArchitectureTests
         Assembly.Load("Kumbara.Wallet.Api"),
         Assembly.Load("Kumbara.Ledger.Api"),
         Assembly.Load("Kumbara.Transfer.Api"),
-        Assembly.Load("Kumbara.Risk.Api")
+        Assembly.Load("Kumbara.Risk.Api"),
+        Assembly.Load("Kumbara.Notification.Api")
     };
 
     [Fact]

@@ -43,6 +43,10 @@
     <ProjectReference Include="..\..\src\Services\Ledger\Kumbara.Ledger.Api\Kumbara.Ledger.Api.csproj" />
     <ProjectReference Include="..\..\src\Services\Transfer\Kumbara.Transfer.Api\Kumbara.Transfer.Api.csproj" />
     <ProjectReference Include="..\..\src\Services\Risk\Kumbara.Risk.Api\Kumbara.Risk.Api.csproj" />
+    <ProjectReference Include="..\..\src\Services\Notification\Kumbara.Notification.Domain\Kumbara.Notification.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Services\Notification\Kumbara.Notification.Application\Kumbara.Notification.Application.csproj" />
+    <ProjectReference Include="..\..\src\Services\Notification\Kumbara.Notification.Infrastructure\Kumbara.Notification.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Services\Notification\Kumbara.Notification.Api\Kumbara.Notification.Api.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Kumbara.BuildingBlocks.Contracts\Kumbara.BuildingBlocks.Contracts.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Kumbara.BuildingBlocks.Outbox\Kumbara.BuildingBlocks.Outbox.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\Kumbara.BuildingBlocks.Idempotency\Kumbara.BuildingBlocks.Idempotency.csproj" />
