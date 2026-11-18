@@ -3,6 +3,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Kumbara.Ledger.Domain\Kumbara.Ledger.Domain.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\Kumbara.BuildingBlocks.Contracts\Kumbara.BuildingBlocks.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Kumbara.BuildingBlocks.Outbox\Kumbara.BuildingBlocks.Outbox.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\Kumbara.BuildingBlocks.Idempotency\Kumbara.BuildingBlocks.Idempotency.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.4.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
   </ItemGroup>
 
   <PropertyGroup>
