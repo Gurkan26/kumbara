@@ -1,7 +1,9 @@
 using Serilog;
+using MassTransit;
 using Kumbara.Ledger.Application;
 using Kumbara.Ledger.Infrastructure;
 using Kumbara.Ledger.Infrastructure.Persistence;
+using Kumbara.Ledger.Infrastructure.Consumers;
 using Kumbara.Ledger.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,10 +26,35 @@ builder.Host.UseSerilog();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// 3. Controllers & Exception Handling
+// 3. MassTransit with RabbitMQ for Saga consumers
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<HoldLedgerFundsConsumer>();
+    x.AddConsumer<CommitLedgerHoldConsumer>();
+    x.AddConsumer<ReleaseLedgerHoldConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var rabbitHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        var rabbitPortStr = builder.Configuration["RabbitMQ:Port"] ?? "5672";
+        ushort.TryParse(rabbitPortStr, out var rabbitPort);
+        var rabbitUser = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+        var rabbitPass = builder.Configuration["RabbitMQ:Password"] ?? "guest";
+
+        cfg.Host(rabbitHost, rabbitPort == 0 ? (ushort)5672 : rabbitPort, "/", h =>
+        {
+            h.Username(rabbitUser);
+            h.Password(rabbitPass);
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
+// 4. Controllers & Exception Handling
 builder.Services.AddControllers();
 
-// 4. Swagger / OpenAPI
+// 5. Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -35,14 +62,14 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Kumbara Ledger API",
         Version = "v1",
-        Description = "Core Ledger Service: Double-entry bookkeeping, append-only ledger entries, and optimistic balance concurrency."
+        Description = "Core Ledger Service: Double-entry bookkeeping, append-only ledger entries, and MassTransit saga consumers."
     });
 });
 
-// 5. Health Checks
+// 6. Health Checks
 builder.Services.AddHealthChecks();
 
-// 6. CORS
+// 7. CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -61,12 +88,12 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSerilogRequestLogging();
 app.UseCors("AllowAll");
 
-// Enable Swagger in Development and Container environments
+// Enable Swagger
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Kumbara Ledger API v1");
-    c.RoutePrefix = string.Empty; // Swagger UI at root
+    c.RoutePrefix = string.Empty;
 });
 
 app.MapControllers();
