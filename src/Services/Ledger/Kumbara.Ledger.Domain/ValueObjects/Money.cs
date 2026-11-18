@@ -9,6 +9,11 @@ public sealed record Money
 
     public Money(decimal amount, string currency)
     {
+        if (amount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(amount), "Money amount cannot be negative.");
+        }
+
         if (string.IsNullOrWhiteSpace(currency))
         {
             throw new ArgumentException("Currency code cannot be empty.", nameof(currency));
@@ -38,6 +43,10 @@ public sealed record Money
     public Money Subtract(Money other)
     {
         EnsureSameCurrency(other);
+        if (Amount < other.Amount)
+        {
+            throw new InvalidOperationException("Resulting money amount cannot be negative.");
+        }
         return new Money(Amount - other.Amount, Currency);
     }
 
