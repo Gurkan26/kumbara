@@ -58,8 +58,20 @@ services:
       - Logging__LogLevel__Default=Debug
       - Logging__LogLevel__Microsoft.AspNetCore=Information
 
+  notification-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Logging__LogLevel__Default=Debug
+      - Logging__LogLevel__Microsoft.AspNetCore=Information
+    ports:
+      - "5006:8080"
+
   gateway:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Logging__LogLevel__Default=Information
       - Logging__LogLevel__Yarp=Debug
+
+  web-ui:
+    ports:
+      - "4200:80"

@@ -234,7 +234,35 @@ services:
       - kumbara-network
 
   # ---------------------------------------------------------------------------
-  # 10. API Gateway (Port: 5000 -> 8080)
+  # 10. Notification API (Port: 5006 -> 8080)
+  # ---------------------------------------------------------------------------
+  notification-api:
+    image: kumbara/notification-api:latest
+    container_name: kumbara-notification-api
+    build:
+      context: ..
+      dockerfile: src/Services/Notification/Kumbara.Notification.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=${RABBITMQ_DEFAULT_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_DEFAULT_PASS:-guest}
+      - Serilog__SeqServerUrl=http://seq:5341
+    ports:
+      - "${NOTIFICATION_PORT:-5006}:8080"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      seq:
+        condition: service_started
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 11. API Gateway (Port: 5000 -> 8080)
   # ---------------------------------------------------------------------------
   gateway:
     image: kumbara/gateway:latest
@@ -246,11 +274,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
-      - ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address=http://identity-api:8080
-      - ReverseProxy__Clusters__wallet-cluster__Destinations__destination1__Address=http://wallet-api:8080
-      - ReverseProxy__Clusters__ledger-cluster__Destinations__destination1__Address=http://ledger-api:8080
-      - ReverseProxy__Clusters__transfer-cluster__Destinations__destination1__Address=http://transfer-api:8080
-      - ReverseProxy__Clusters__risk-cluster__Destinations__destination1__Address=http://risk-api:8080
+      - ReverseProxy__Clusters__identity-cluster__Destinations__identity-destination__Address=http://identity-api:8080
+      - ReverseProxy__Clusters__wallet-cluster__Destinations__wallet-destination__Address=http://wallet-api:8080
+      - ReverseProxy__Clusters__ledger-cluster__Destinations__ledger-destination__Address=http://ledger-api:8080
+      - ReverseProxy__Clusters__transfer-cluster__Destinations__transfer-destination__Address=http://transfer-api:8080
+      - ReverseProxy__Clusters__risk-cluster__Destinations__risk-destination__Address=http://risk-api:8080
+      - ReverseProxy__Clusters__notification-cluster__Destinations__notification-destination__Address=http://notification-api:8080
       - Serilog__SeqServerUrl=http://seq:5341
     ports:
       - "${GATEWAY_PORT:-5000}:8080"
@@ -264,6 +293,26 @@ services:
       transfer-api:
         condition: service_started
       risk-api:
+        condition: service_started
+      notification-api:
+        condition: service_started
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 12. Angular Standalone Web UI (Port: 4200 -> 80)
+  # ---------------------------------------------------------------------------
+  web-ui:
+    image: kumbara/web-ui:latest
+    container_name: kumbara-web-ui
+    build:
+      context: ../src/Web/kumbara-ui
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${WEB_UI_PORT:-4200}:80"
+    depends_on:
+      gateway:
         condition: service_started
     networks:
       - kumbara-network
