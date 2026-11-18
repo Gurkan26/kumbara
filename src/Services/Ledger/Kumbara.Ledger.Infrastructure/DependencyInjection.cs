@@ -26,6 +26,8 @@ public static class DependencyInjection
 
         services.AddScoped<ILedgerDbContext>(sp => sp.GetRequiredService<LedgerDbContext>());
         services.AddScoped<ILedgerRepository, LedgerRepository>();
+        services.AddScoped<Kumbara.Ledger.Application.Invariants.ILedgerInvariantChecker, Kumbara.Ledger.Infrastructure.Invariants.LedgerInvariantChecker>();
+        services.AddHostedService<Kumbara.Ledger.Infrastructure.Invariants.LedgerInvariantCheckBackgroundService>();
 
         return services;
     }
