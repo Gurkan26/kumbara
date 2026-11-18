@@ -1,6 +1,45 @@
-@Kumbara.Wallet.Api_HostAddress = http://localhost:5219
+@Kumbara.Wallet.Api_HostAddress = http://localhost:5002
 
-GET {{Kumbara.Wallet.Api_HostAddress}}/weatherforecast/
+### Health Check
+GET {{Kumbara.Wallet.Api_HostAddress}}/health
 Accept: application/json
 
-###
+### Create Wallet
+POST {{Kumbara.Wallet.Api_HostAddress}}/api/wallets
+Content-Type: application/json
+
+{
+  "userId": "11111111-1111-1111-1111-111111111111",
+  "currency": "TRY",
+  "dailyLimit": 50000,
+  "monthlyLimit": 200000
+}
+
+### Get Wallet by Id
+GET {{Kumbara.Wallet.Api_HostAddress}}/api/wallets/{{walletId}}
+Accept: application/json
+
+### Get Wallets by User Id
+GET {{Kumbara.Wallet.Api_HostAddress}}/api/wallets/user/11111111-1111-1111-1111-111111111111
+Accept: application/json
+
+### Freeze Wallet
+POST {{Kumbara.Wallet.Api_HostAddress}}/api/wallets/{{walletId}}/freeze
+Content-Type: application/json
+
+{
+  "reason": "Suspicious login from unusual location"
+}
+
+### Unfreeze Wallet
+POST {{Kumbara.Wallet.Api_HostAddress}}/api/wallets/{{walletId}}/unfreeze
+Content-Type: application/json
+
+### Update Wallet Limits
+PUT {{Kumbara.Wallet.Api_HostAddress}}/api/wallets/{{walletId}}/limits
+Content-Type: application/json
+
+{
+  "dailyLimit": 75000,
+  "monthlyLimit": 300000
+}

@@ -5,6 +5,10 @@
     <ProjectReference Include="..\..\..\BuildingBlocks\Kumbara.BuildingBlocks.Contracts\Kumbara.BuildingBlocks.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="15.0.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
