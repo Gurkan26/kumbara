@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -454,7 +454,12 @@ export class TransferComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   idempotencyKey = signal<string>(generateUUID());
-  selectedSourceWallet = signal<Wallet | null>(null);
+  selectedSourceId = signal<string>('');
+  selectedSourceWallet = computed(() => {
+    const srcId = this.selectedSourceId();
+    if (!srcId) return null;
+    return this.walletService.wallets().find(w => w.id === srcId) || null;
+  });
 
   transferForm = this.fb.group({
     sourceAccountId: ['', [Validators.required]],
@@ -485,9 +490,8 @@ export class TransferComponent implements OnInit {
   }
 
   onSourceChanged(): void {
-    const srcId = this.transferForm.value.sourceAccountId;
-    const wallet = this.walletService.wallets().find(w => w.id === srcId) || null;
-    this.selectedSourceWallet.set(wallet);
+    const srcId = this.transferForm.value.sourceAccountId || '';
+    this.selectedSourceId.set(srcId);
   }
 
   fillSampleReceiver(): void {

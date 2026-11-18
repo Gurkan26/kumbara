@@ -87,7 +87,7 @@ services:
       - ACCEPT_EULA=Y
     ports:
       - "${SEQ_INGESTION_PORT:-5341}:5341"
-      - "${SEQ_UI_PORT:-8081}:80"
+      - "${SEQ_UI_PORT:-8081}:5341"
     volumes:
       - seq-data:/data
     networks:
@@ -132,6 +132,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__WalletDb=Server=sqlserver;Database=KumbaraWalletDb;User Id=sa;Password=${SA_PASSWORD:-Your_Strong_Password_123!};TrustServerCertificate=True;MultipleActiveResultSets=true
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=KumbaraWalletDb;User Id=sa;Password=${SA_PASSWORD:-Your_Strong_Password_123!};TrustServerCertificate=True;MultipleActiveResultSets=true
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Port=5672
