@@ -1,0 +1,40 @@
+# =============================================================================
+# ⚠️ SIMULATION ONLY - NO REAL MONEY ⚠️
+# Kumbara Microservices - Shared Multi-stage Dockerfile Template (.NET 8)
+# =============================================================================
+# Build context: Repository root (e.g. docker build -f src/Services/{Service}/Kumbara.{Service}.Api/Dockerfile .)
+# =============================================================================
+
+# Step 1: SDK Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy BuildingBlocks contracts and shared libraries for restore layer caching
+COPY ["src/BuildingBlocks/Kumbara.BuildingBlocks.Contracts/Kumbara.BuildingBlocks.Contracts.csproj", "src/BuildingBlocks/Kumbara.BuildingBlocks.Contracts/"]
+COPY ["src/BuildingBlocks/Kumbara.BuildingBlocks.Outbox/Kumbara.BuildingBlocks.Outbox.csproj", "src/BuildingBlocks/Kumbara.BuildingBlocks.Outbox/"]
+COPY ["src/BuildingBlocks/Kumbara.BuildingBlocks.Idempotency/Kumbara.BuildingBlocks.Idempotency.csproj", "src/BuildingBlocks/Kumbara.BuildingBlocks.Idempotency/"]
+
+# Copy Service csproj files
+COPY ["src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Domain/Kumbara.${SERVICE_NAME}.Domain.csproj", "src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Domain/"]
+COPY ["src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Application/Kumbara.${SERVICE_NAME}.Application.csproj", "src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Application/"]
+COPY ["src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Infrastructure/Kumbara.${SERVICE_NAME}.Infrastructure.csproj", "src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Infrastructure/"]
+COPY ["src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Api/Kumbara.${SERVICE_NAME}.Api.csproj", "src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Api/"]
+
+# Restore dependencies
+RUN dotnet restore "src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Api/Kumbara.${SERVICE_NAME}.Api.csproj"
+
+# Copy source trees
+COPY ["src/BuildingBlocks/", "src/BuildingBlocks/"]
+COPY ["src/Services/${SERVICE_NAME}/", "src/Services/${SERVICE_NAME}/"]
+
+# Publish in Release mode
+WORKDIR "/src/src/Services/${SERVICE_NAME}/Kumbara.${SERVICE_NAME}.Api"
+RUN dotnet publish "Kumbara.${SERVICE_NAME}.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Step 2: ASP.NET Core Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+EXPOSE 8080
+ENV ASPNETCORE_HTTP_PORTS=8080
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "Kumbara.${SERVICE_NAME}.Api.dll"]

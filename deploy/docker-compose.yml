@@ -1,0 +1,289 @@
+# =============================================================================
+# ⚠️ SIMULATION ONLY - NO REAL MONEY ⚠️
+# Kumbara Fintech Platform - Docker Compose Configuration
+# =============================================================================
+# Usage:
+#   docker compose -f deploy/docker-compose.yml up -d
+#   docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.override.yml up -d
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # 1. SQL Server 2022
+  # ---------------------------------------------------------------------------
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: kumbara-sqlserver
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_PID=${MSSQL_PID:-Developer}
+      - SA_PASSWORD=${SA_PASSWORD:-Your_Strong_Password_123!}
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${SA_PASSWORD:-Your_Strong_Password_123!}\" -C -Q \"SELECT 1\" || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$${SA_PASSWORD:-Your_Strong_Password_123!}\" -Q \"SELECT 1\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 2. RabbitMQ with Management Plugin
+  # ---------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: kumbara-rabbitmq
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-guest}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 3. Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: kumbara-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 4. Seq (Centralized Structured Logging)
+  # ---------------------------------------------------------------------------
+  seq:
+    image: datalust/seq:latest
+    container_name: kumbara-seq
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "${SEQ_INGESTION_PORT:-5341}:5341"
+      - "${SEQ_UI_PORT:-8081}:80"
+    volumes:
+      - seq-data:/data
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 5. Identity API (Port: 5001 -> 8080)
+  # ---------------------------------------------------------------------------
+  identity-api:
+    image: kumbara/identity-api:latest
+    container_name: kumbara-identity-api
+    build:
+      context: ..
+      dockerfile: src/Services/Identity/Kumbara.Identity.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=KumbaraIdentityDb;User Id=sa;Password=${SA_PASSWORD:-Your_Strong_Password_123!};TrustServerCertificate=True;MultipleActiveResultSets=true
+      - Jwt__Secret=${JWT_SECRET:-DevSuperSecretKeyForKumbaraFintechPlatform2026!}
+      - Jwt__Issuer=http://identity-api:8080
+      - Jwt__Audience=kumbara-clients
+      - Serilog__SeqServerUrl=http://seq:5341
+    ports:
+      - "${IDENTITY_PORT:-5001}:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 6. Wallet API (Port: 5002 -> 8080)
+  # ---------------------------------------------------------------------------
+  wallet-api:
+    image: kumbara/wallet-api:latest
+    container_name: kumbara-wallet-api
+    build:
+      context: ..
+      dockerfile: src/Services/Wallet/Kumbara.Wallet.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=KumbaraWalletDb;User Id=sa;Password=${SA_PASSWORD:-Your_Strong_Password_123!};TrustServerCertificate=True;MultipleActiveResultSets=true
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=${RABBITMQ_DEFAULT_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_DEFAULT_PASS:-guest}
+      - Serilog__SeqServerUrl=http://seq:5341
+    ports:
+      - "${WALLET_PORT:-5002}:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 7. Ledger API (Port: 5003 -> 8080)
+  # ---------------------------------------------------------------------------
+  ledger-api:
+    image: kumbara/ledger-api:latest
+    container_name: kumbara-ledger-api
+    build:
+      context: ..
+      dockerfile: src/Services/Ledger/Kumbara.Ledger.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=KumbaraLedgerDb;User Id=sa;Password=${SA_PASSWORD:-Your_Strong_Password_123!};TrustServerCertificate=True;MultipleActiveResultSets=true
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=${RABBITMQ_DEFAULT_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_DEFAULT_PASS:-guest}
+      - Serilog__SeqServerUrl=http://seq:5341
+    ports:
+      - "${LEDGER_PORT:-5003}:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 8. Transfer API (Port: 5004 -> 8080)
+  # ---------------------------------------------------------------------------
+  transfer-api:
+    image: kumbara/transfer-api:latest
+    container_name: kumbara-transfer-api
+    build:
+      context: ..
+      dockerfile: src/Services/Transfer/Kumbara.Transfer.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=KumbaraTransferDb;User Id=sa;Password=${SA_PASSWORD:-Your_Strong_Password_123!};TrustServerCertificate=True;MultipleActiveResultSets=true
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=${RABBITMQ_DEFAULT_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_DEFAULT_PASS:-guest}
+      - Serilog__SeqServerUrl=http://seq:5341
+    ports:
+      - "${TRANSFER_PORT:-5004}:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 9. Risk API (Port: 5005 -> 8080)
+  # ---------------------------------------------------------------------------
+  risk-api:
+    image: kumbara/risk-api:latest
+    container_name: kumbara-risk-api
+    build:
+      context: ..
+      dockerfile: src/Services/Risk/Kumbara.Risk.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - Redis__Configuration=redis:6379
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__Username=${RABBITMQ_DEFAULT_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_DEFAULT_PASS:-guest}
+      - Serilog__SeqServerUrl=http://seq:5341
+    ports:
+      - "${RISK_PORT:-5005}:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - kumbara-network
+
+  # ---------------------------------------------------------------------------
+  # 10. API Gateway (Port: 5000 -> 8080)
+  # ---------------------------------------------------------------------------
+  gateway:
+    image: kumbara/gateway:latest
+    container_name: kumbara-gateway
+    build:
+      context: ..
+      dockerfile: src/Gateway/Kumbara.Gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ReverseProxy__Clusters__identity-cluster__Destinations__destination1__Address=http://identity-api:8080
+      - ReverseProxy__Clusters__wallet-cluster__Destinations__destination1__Address=http://wallet-api:8080
+      - ReverseProxy__Clusters__ledger-cluster__Destinations__destination1__Address=http://ledger-api:8080
+      - ReverseProxy__Clusters__transfer-cluster__Destinations__destination1__Address=http://transfer-api:8080
+      - ReverseProxy__Clusters__risk-cluster__Destinations__destination1__Address=http://risk-api:8080
+      - Serilog__SeqServerUrl=http://seq:5341
+    ports:
+      - "${GATEWAY_PORT:-5000}:8080"
+    depends_on:
+      identity-api:
+        condition: service_started
+      wallet-api:
+        condition: service_started
+      ledger-api:
+        condition: service_started
+      transfer-api:
+        condition: service_started
+      risk-api:
+        condition: service_started
+    networks:
+      - kumbara-network
+
+# -----------------------------------------------------------------------------
+# Networks
+# -----------------------------------------------------------------------------
+networks:
+  kumbara-network:
+    driver: bridge
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
+volumes:
+  sqlserver-data:
+    name: kumbara-sqlserver-data
+  rabbitmq-data:
+    name: kumbara-rabbitmq-data
+  redis-data:
+    name: kumbara-redis-data
+  seq-data:
+    name: kumbara-seq-data

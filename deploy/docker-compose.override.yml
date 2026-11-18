@@ -1,0 +1,65 @@
+# =============================================================================
+# ⚠️ SIMULATION ONLY - NO REAL MONEY ⚠️
+# Kumbara Fintech Platform - Local Development Overrides
+# =============================================================================
+# Automatically merged with docker-compose.yml by Docker Compose:
+#   docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.override.yml up
+# =============================================================================
+
+services:
+  sqlserver:
+    environment:
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+
+  rabbitmq:
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  seq:
+    ports:
+      - "5341:5341"
+      - "8081:80"
+
+  identity-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Logging__LogLevel__Default=Debug
+      - Logging__LogLevel__Microsoft.AspNetCore=Information
+      - Logging__LogLevel__Microsoft.EntityFrameworkCore=Information
+
+  wallet-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Logging__LogLevel__Default=Debug
+      - Logging__LogLevel__Microsoft.AspNetCore=Information
+
+  ledger-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Logging__LogLevel__Default=Debug
+      - Logging__LogLevel__Microsoft.AspNetCore=Information
+
+  transfer-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Logging__LogLevel__Default=Debug
+      - Logging__LogLevel__Microsoft.AspNetCore=Information
+
+  risk-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Logging__LogLevel__Default=Debug
+      - Logging__LogLevel__Microsoft.AspNetCore=Information
+
+  gateway:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Yarp=Debug
